@@ -2,6 +2,7 @@
 
  
 Step 1: Copy example3.txt into the directory /syzkaller/sys/linux/
+
 Command: cp example3.txt /syzkaller/sys/linux/
 
 Step 2: Copy common_linux.h into the directory /syzkaller/executor/
