@@ -12,7 +12,7 @@ cp syscalls_linux.go /syzkaller/pkg/host/
 cp my.cfg /syzkaller/
 
 
-# Step 5: Build files
+# Step 2: Build files
 
 cd /syzkaller/
 
