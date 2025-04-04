@@ -1,0 +1,77 @@
+include <uapi/asm/mman.h>
+include <uapi/asm/shmbuf.h>
+include <linux/posix_types.h>
+
+resource fd_htlb[fd]
+resource vma_htlb[intptr]
+
+#open$htlb(path ptr[in, string["/dev/hugepages"]], flags flags[open_flags], mode flags[open_modes]) fd_htlb
+#open$htlb(path ptr[in, string["/mnt/huge"]], flags flags[open_flags], mode flags[open_modes]) fd_htlb
+
+open$htlb(path ptr[in, string["/mnt/huge/a"]], flags flags[open_flags], mode flags[open_modes]) fd_htlb
+
+mmap$htlb3(addr const[0], len const[0x2000], prot const[0x0], flags const[0x40031], fd const[0xffffffffffffffff], offset intptr[0x8000000000000000])
+
+write$htlb(fd fd, buf ptr64[in, string], count len[buf])
+write$htlb2(fd fd_htlb, buf ptr64[in, string], count len[buf])
+
+open_modes = O_APPEND, O_CLOEXEC, O_CREAT, S_IRUSR, S_IWUSR, S_IXUSR, S_IRGRP, S_IWGRP, S_IXGRP, S_IROTH, S_IWOTH, S_IWOTH, O_DIRECT, O_DIRECTORY, O_DSYNC, O_EXCL, O_LARGEFILE, O_NOATIME, O_NOATIME, O_NOFOLLOW, O_NONBLOCK, O_SYNC, O_TRUNC
+
+# Instead of standard mmap_flags, mremap_flags
+mmap_htlb_flags = MAP_SHARED, MAP_PRIVATE, MAP_HUGETLB
+
+# STANDARD MEM SYSCALLS
+brk$htlb(brk intptr)
+mmap$htlb(addr vma, len int32[2097152:2147483648], prot flags[mmap_prot], flags flags[mmap_htlb_flags], fd fd_htlb, offset intptr[0:0xffffffff, 0x1000]) vma_htlb
+mmap$htlb2(addr vma, len len[addr], prot flags[mmap_prot], flags flags[mmap_flags], fd fd_htlb, offset intptr[0:0xffffffff, 0x1000]) vma_htlb
+munmap$htlb(addr vma, len len[addr])
+mremap$htlb(addr vma, len len[addr], newlen len[newaddr], flags flags[mremap_flags], newaddr vma)
+
+munmap$htlb2(addr vma_htlb, len len[addr])
+mremap$htlb2(addr vma_htlb, len len[addr], newlen len[newaddr], flags flags[mremap_flags], newaddr vma)
+
+remap_file_pages$htlb(addr vma, size len[addr], prot flags[mmap_prot], pgoff intptr, flags flags[mmap_flags])
+mprotect$htlb(addr vma, len len[addr], prot flags[mmap_prot])
+msync$htlb(addr vma, len len[addr], f flags[msync_flags])
+madvise$htlb(addr vma, len len[addr], advice flags[madvise_flags])
+process_madvise$htlb(pidfd fd_pidfd, vec ptr[in, array[iovec_in]], vlen len[vec], advice flags[madvise_flags], flags const[0])
+process_mrelease$htlb(pidfd fd_pidfd, flags const[0])
+fadvise64$htlb(fd fd, offset fileoff, len intptr, advice flags[fadvise_flags])
+readahead$htlb(fd fd, off intptr, count intptr)
+mbind$htlb(addr vma, len len[addr], mode flags[mbind_mode], nodemask ptr[in, int64], maxnode intptr, flags flags[mbind_flags])
+move_pages$htlb(pid pid, nr len[pages], pages ptr[in, array[vma]], nodes ptr[in, array[int32], opt], status ptr[out, array[int32]], flags flags[move_pages_flags])
+migrate_pages$htlb(pid pid, maxnode intptr, old ptr[in, int64], new ptr[in, int64])
+set_mempolicy$htlb(mode flags[mbind_mode], nodemask ptr[in, int64], maxnode intptr)
+get_mempolicy$htlb(mode ptr[out, int32], nodemask ptr[out, int64], maxnode intptr, addr vma, flags flags[mempolicy_flags])
+set_mempolicy_home_node$htlb(addr vma, len len[addr], home_node intptr[0:3], flags const[0])
+mincore$htlb(addr vma, size len[addr], vec buffer[out])
+mlock$htlb(addr vma, size len[addr])
+mlock2$htlb(addr vma, size len[addr], flags flags[mlock_flags])
+munlock$htlb(addr vma, size len[addr])
+mlockall$htlb(flags flags[mlockall_flags])
+munlockall$htlb()
+kcmp$htlb(pid1 pid, pid2 pid, type flags[kcmp_flags], fd1 fd, fd2 fd)
+kcmp$htlb2(pid1 pid, pid2 pid, type const[KCMP_EPOLL_TFD], fd1 fd, idx2 ptr[in, kcmp_epoll_slot])
+
+#resource fd_memfd[fd]
+memfd_create$htlb(name ptr[in, string], flags flags[memfd_flags]) fd_memfd
+#memfd_flags = MFD_CLOEXEC, MFD_ALLOW_SEALING, MFD_HUGETLB
+_ = MFD_HUGE_SHIFT, MFD_HUGE_MASK, MFD_HUGE_64KB, MFD_HUGE_512KB, MFD_HUGE_1MB, MFD_HUGE_2MB, MFD_HUGE_8MB, MFD_HUGE_16MB
+
+memfd_secret$htlb(flags flags[memfd_secret_flags]) fd
+#memfd_secret_flags = O_CLOEXEC
+
+# PSEUDO SYSCALLS TO SIMULATE APPLICATION USING DIFFERENT FILES
+syz_hugetlb(num int32[-10:1000000])
+syz_hugetlb_surplus(num int32[-10:1000000])
+syz_mount_huge()
+syz_enable_transparent()
+syz_disable_transparent()
+syz_disable_hugepages()
+syz_create_hugepage_fd(num int32[0:1000]) fd_htlb
+syz_write_to_hugepage(addr vma_htlb)
+syz_write_to_hugepage$2(addr vma)
+syz_delete_hugepage(fd fd_htlb)
+syz_delete_hugepage$2(fd fd)
+syz_read_from_page(addr vma_htlb)
+syz_read_from_page$2(addr vma)
